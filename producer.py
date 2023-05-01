@@ -12,7 +12,7 @@ accessTokenSecret = config('ACCESSTOKENSECRET')
 
 logging.basicConfig(level=logging.INFO)
 producer = KafkaProducer(bootstrap_servers='localhost:9092')
-search_term = 'elon musk'
+search_term = 'ChatGPT'
 topic_name = 'twitter'
 
 
@@ -21,41 +21,25 @@ def twitterAuth():
     authenticate = tweepy.OAuthHandler(consumerKey, consumerSecret)
     # set the access token and the access token secret
     authenticate.set_access_token(accessToken, accessTokenSecret)
+    authenticate.secure = True
     # create the API object
     api = tweepy.API(authenticate, wait_on_rate_limit=True)
     return api
 
 
-class TweetListener(tweepy.Stream):
+class TweetListener(tweepy.StreamingClient):
 
     def on_data(self, raw_data):
-        # logging.info(raw_data)
+        logging.info(raw_data)
 
         tweet = json.loads(raw_data)
-        tweet_text = ""
-        # print(tweet.keys())
 
-        if all(x in tweet.keys() for x in ['lang', 'created_at']) and tweet['lang'] == 'en':
-            if 'retweeted_status' in tweet.keys():
-                if 'quoted_status' in tweet['retweeted_status'].keys():
-                    if 'extended_tweet' in tweet['retweeted_status']['quoted_status'].keys():
-                        tweet_text = tweet['retweeted_status']['quoted_status']['extended_tweet']['full_text']
-                elif 'extended_tweet' in tweet['retweeted_status'].keys():
-                    tweet_text = tweet['retweeted_status']['extended_tweet']['full_text']
-            elif tweet['truncated'] == 'true':
-                tweet_text = tweet['extended_tweet']['full_text']
-
-            else:
-                tweet_text = tweet['text']
-
-        if tweet_text:
+        if tweet['data']:
             data = {
-                'created_at': tweet['created_at'],
-                'message': tweet_text.replace(',', '')
+                'message': tweet['data']['text'].replace(',', '')
             }
             producer.send(topic_name, value=json.dumps(data).encode('utf-8'))
 
-        # producer.send(topic_name, value=raw_data)
         return True
 
     @staticmethod
@@ -65,9 +49,10 @@ class TweetListener(tweepy.Stream):
             return False
 
     def start_streaming_tweets(self, search_term):
-        self.filter(track=search_term, stall_warnings=True, languages=["en"])
+        self.add_rules(tweepy.StreamRule(search_term))
+        self.filter()
 
 
 if __name__ == '__main__':
-    twitter_stream = TweetListener(consumerKey, consumerSecret, accessToken, accessTokenSecret)
+    twitter_stream = TweetListener(bearerToken)
     twitter_stream.start_streaming_tweets(search_term)
