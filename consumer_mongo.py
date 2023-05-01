@@ -1,4 +1,3 @@
-from datetime import datetime
 import re
 import findspark
 from pyspark.ml import PipelineModel
@@ -9,9 +8,9 @@ from decouple import config
 
 
 def write_row_in_mongo(df):
-    mongoURI = config('MONGOACCESS')
+    mongo_uri = config('MONGOACCESS')
 
-    df.write.format("mongo").mode("append").option("uri", mongoURI).save()
+    df.write.format("mongo").mode("append").option("uri", mongo_uri).save()
 
 
 if __name__ == "__main__":

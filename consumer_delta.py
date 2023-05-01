@@ -1,4 +1,3 @@
-from datetime import datetime
 import re
 import findspark
 from pyspark.ml import PipelineModel
@@ -10,8 +9,8 @@ from delta.tables import *
 
 
 def write_row_in_delta(df):
-    deltaPath = config('DELTAPATH')
-    df.write.format("delta").mode("append").option("mergeSchema", "true").save(deltaPath)
+    delta_path = config('DELTAPATH')
+    df.write.format("delta").mode("append").option("mergeSchema", "true").save(delta_path)
 
 
 if __name__ == "__main__":
@@ -21,12 +20,12 @@ if __name__ == "__main__":
     path_to_model = r''
 
     spark = SparkSession \
-         .builder \
-         .master("local[*]") \
-         .appName("TwitterSentimentAnalysis") \
-         .config("spark.jars.packages", "io.delta:delta-core_2.12:1.1.0") \
-         .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2") \
-         .getOrCreate()
+        .builder \
+        .master("local[*]") \
+        .appName("TwitterSentimentAnalysis") \
+        .config("spark.jars.packages", "io.delta:delta-core_2.12:1.1.0") \
+        .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.2") \
+        .getOrCreate()
 
     # Spark Context
     sc = spark.sparkContext
@@ -64,6 +63,6 @@ if __name__ == "__main__":
 
     # Load prediction in Delta Lake
     query = prediction.writeStream \
-         .foreachBatch(write_row_in_delta) \
-         .option("checkpointLocation", "/tmp/checkpoint") \
-         .start()
+        .foreachBatch(write_row_in_delta) \
+        .option("checkpointLocation", "/tmp/checkpoint") \
+        .start()

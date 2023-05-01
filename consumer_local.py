@@ -5,7 +5,6 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_json, udf
 from pyspark.sql.types import StructType, StructField, StringType, ArrayType
 
-
 if __name__ == "__main__":
     findspark.init()
 
@@ -64,4 +63,4 @@ if __name__ == "__main__":
         .option("header", True) \
         .option("checkpointLocation", check_path) \
         .start() \
-       .awaitTermination()
+        .awaitTermination()

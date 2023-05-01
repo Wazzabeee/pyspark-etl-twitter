@@ -9,6 +9,7 @@ consumerKey = config('CONSUMERKEY')
 consumerSecret = config('CONSUMERSECRET')
 accessToken = config('ACCESSTOKEN')
 accessTokenSecret = config('ACCESSTOKENSECRET')
+bearerToken = config('BEARERTOKEN')
 
 logging.basicConfig(level=logging.INFO)
 producer = KafkaProducer(bootstrap_servers='localhost:9092')
